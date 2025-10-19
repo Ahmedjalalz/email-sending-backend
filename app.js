@@ -9,32 +9,40 @@ dotenv.config();
 
 const app = express();
 
-// ✅ Allow CORS from your frontend only
-app.use(cors({ origin: "https://autoemailsender.netlify.app" }));
+// ✅ Allow your Netlify frontend to access backend
+app.use(
+  cors({
+    origin: "https://autoemailsender.netlify.app",
+    methods: ["GET", "POST"],
+  })
+);
+
 app.use(express.json());
 
-// ✅ Multer for file upload
+// ✅ Multer for file uploads
 const upload = multer({ dest: "uploads/" });
 
-// Gmail credentials
+// ✅ Gmail credentials (you can later move these to Railway variables)
 const USER_EMAIL = "ahmedjalalzen@gmail.com";
 const APP_PASSWORD = "zbhxtnikcodnfpqg";
 
-// Root route
+// ✅ Root test route
 app.get("/", (req, res) => {
   res.send("✅ Email backend is live on Railway!");
 });
 
-// Email route
+// ✅ Email route
 app.post("/send-email", upload.single("attachment"), async (req, res) => {
   const { to, subject, message, repeat } = req.body;
   const file = req.file;
 
-  console.log("📨 Received fields:", req.body);
-  console.log("📎 File:", file?.originalname);
+  console.log("📨 Received:", req.body);
+  console.log("📎 Attachment:", file?.originalname);
 
   if (!to || !subject || !message) {
-    return res.status(400).json({ success: false, message: "Missing fields" });
+    return res
+      .status(400)
+      .json({ success: false, message: "Missing email fields" });
   }
 
   try {
@@ -56,7 +64,7 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
         : [],
     };
 
-    for (let i = 0; i < repeat; i++) {
+    for (let i = 0; i < (repeat || 1); i++) {
       await transporter.sendMail(mailOptions);
       console.log(`✅ Email ${i + 1} sent successfully`);
     }
@@ -65,12 +73,12 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
 
     res.json({ success: true, message: "Emails sent successfully" });
   } catch (error) {
-    console.error("❌ Email sending failed:", error.message);
-    res.status(500).json({ error: error.message });
+    console.error("❌ Email sending failed:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// ✅ Dynamic port for Railway
+// ✅ Dynamic port (Railway requires this)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
