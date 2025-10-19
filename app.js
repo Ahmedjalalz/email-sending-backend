@@ -14,10 +14,10 @@ app.use(cors());
 const upload = multer({ dest: "uploads/" });
 
 // Gmail credentials
-// const USER_EMAIL = "ahmedjalalzen@gmail.com";
-// const APP_PASSWORD = "zbhxtnikcodnfpqg";
-const USER_EMAIL = process.env.EMAIL_USER?.trim();
-const APP_PASSWORD = process.env.EMAIL_PASS?.trim();
+const USER_EMAIL = "ahmedjalalzen@gmail.com";
+const APP_PASSWORD = "zbhxtnikcodnfpqg";
+// const USER_EMAIL = process.env.EMAIL_USER?.trim();
+// const APP_PASSWORD = process.env.EMAIL_PASS?.trim();
 
 console.log("DEBUG → EMAIL_USER:", JSON.stringify(USER_EMAIL));
 console.log("DEBUG → EMAIL_PASS:", JSON.stringify(APP_PASSWORD));
