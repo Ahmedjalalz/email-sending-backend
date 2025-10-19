@@ -13,14 +13,16 @@ app.use(cors({ origin: "*" }));
 // Multer handles multipart/form-data (for text + file)
 const upload = multer({ dest: "uploads/" });
 
-// Gmail credentials
+// Gmail credentials (you can switch to env vars later)
 const USER_EMAIL = "ahmedjalalzen@gmail.com";
 const APP_PASSWORD = "zbhxtnikcodnfpqg";
-// const USER_EMAIL = process.env.EMAIL_USER?.trim();
-// const APP_PASSWORD = process.env.EMAIL_PASS?.trim();
 
 console.log("DEBUG → EMAIL_USER:", JSON.stringify(USER_EMAIL));
 console.log("DEBUG → EMAIL_PASS:", JSON.stringify(APP_PASSWORD));
+
+app.get("/", (req, res) => {
+  res.send("✅ Email backend is running successfully on Railway!");
+});
 
 app.post("/send-email", upload.single("attachment"), async (req, res) => {
   const { to, subject, message, repeat } = req.body;
@@ -61,14 +63,11 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
 
     res.json({ success: true, message: "Emails sent successfully" });
   } catch (error) {
-  console.error("❌ Email sending failed:", error.message);
-  res.status(500).json({ error: error.message });
-}
+    console.error("❌ Email sending failed:", error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-// console.log("EMAIL_USER:", process.env.EMAIL_USER);
-// console.log("EMAIL_PASS:", process.env.EMAIL_PASS);
-
-
-//forcing git
-app.listen(5000, () => console.log("🚀 Server running on port 5000"));
+// ✅ Use dynamic Railway port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
