@@ -8,22 +8,24 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: "*" }));
 
-// Multer handles multipart/form-data (for text + file)
+// ✅ Allow CORS from your frontend only
+app.use(cors({ origin: "https://autoemailsender.netlify.app" }));
+app.use(express.json());
+
+// ✅ Multer for file upload
 const upload = multer({ dest: "uploads/" });
 
-// Gmail credentials (you can switch to env vars later)
+// Gmail credentials
 const USER_EMAIL = "ahmedjalalzen@gmail.com";
 const APP_PASSWORD = "zbhxtnikcodnfpqg";
 
-console.log("DEBUG → EMAIL_USER:", JSON.stringify(USER_EMAIL));
-console.log("DEBUG → EMAIL_PASS:", JSON.stringify(APP_PASSWORD));
-
+// Root route
 app.get("/", (req, res) => {
-  res.send("✅ Email backend is running successfully on Railway!");
+  res.send("✅ Email backend is live on Railway!");
 });
 
+// Email route
 app.post("/send-email", upload.single("attachment"), async (req, res) => {
   const { to, subject, message, repeat } = req.body;
   const file = req.file;
@@ -68,6 +70,8 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
   }
 });
 
-// ✅ Use dynamic Railway port
+// ✅ Dynamic port for Railway
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
