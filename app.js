@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "*" }));
 
 // Multer handles multipart/form-data (for text + file)
 const upload = multer({ dest: "uploads/" });
