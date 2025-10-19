@@ -4,6 +4,9 @@ import cors from "cors";
 import multer from "multer";
 import fs from "fs";
 import dotenv from "dotenv";
+import cors from 'cors';
+app.use(cors());
+
 dotenv.config();
 
 const app = express();
