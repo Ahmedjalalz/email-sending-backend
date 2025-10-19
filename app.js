@@ -60,10 +60,10 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
     if (file) fs.unlinkSync(file.path);
 
     res.json({ success: true, message: "Emails sent successfully" });
-  } catch (err) {
-    console.error("❌ Email sending failed:", err);
-    res.status(500).json({ success: false, message: "Failed to send email" });
-  }
+  } catch (error) {
+  console.error("❌ Email sending failed:", error.message);
+  res.status(500).json({ error: error.message });
+}
 });
 
 // console.log("EMAIL_USER:", process.env.EMAIL_USER);
