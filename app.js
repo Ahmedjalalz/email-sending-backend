@@ -6,46 +6,57 @@ import fs from "fs";
 import dotenv from "dotenv";
 
 dotenv.config();
-
 const app = express();
 
-// ✅ Allow your Netlify frontend to access backend
+// ✅ Dynamic CORS setup
+const allowedOrigins = [
+  "https://autoemailsender.netlify.app"
+];
+
 app.use(
   cors({
-    origin: "https://autoemailsender.netlify.app",
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST"],
   })
 );
 
 app.use(express.json());
 
-// ✅ Multer for file uploads
+// ✅ Multer setup (store uploads in /uploads)
 const upload = multer({ dest: "uploads/" });
 
-// ✅ Gmail credentials (you can later move these to Railway variables)
-const USER_EMAIL = "ahmedjalalzen@gmail.com";
-const APP_PASSWORD = "zbhxtnikcodnfpqg";
+// ✅ Gmail credentials
+const USER_EMAIL = process.env.EMAIL_USER || "ahmedjalalzen@gmail.com";
+const APP_PASSWORD = process.env.EMAIL_PASS || "zbhxtnikcodnfpqg";
 
-// ✅ Root test route
+// ✅ Root route for testing
 app.get("/", (req, res) => {
-  res.send("✅ Email backend is live on Railway!");
+  res.send("✅ Email backend is live and running!");
 });
 
-// ✅ Email route
-app.post("/send-email", upload.single("attachment"), async (req, res) => {
+// ✅ Send Email route (multiple attachments supported)
+app.post("/send-email", upload.array("attachments", 10), async (req, res) => {
   const { to, subject, message, repeat } = req.body;
-  const file = req.file;
+  const files = req.files;
 
   console.log("📨 Received:", req.body);
-  console.log("📎 Attachment:", file?.originalname);
+  console.log("📎 Files:", files?.map((f) => f.originalname));
 
   if (!to || !subject || !message) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Missing email fields" });
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields (to, subject, message)",
+    });
   }
 
   try {
+    // ✅ Setup transporter
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -59,26 +70,37 @@ app.post("/send-email", upload.single("attachment"), async (req, res) => {
       to,
       subject,
       text: message,
-      attachments: file
-        ? [{ filename: file.originalname, path: file.path }]
+      attachments: files
+        ? files.map((file) => ({
+            filename: file.originalname,
+            path: file.path,
+          }))
         : [],
     };
 
-    for (let i = 0; i < (repeat || 1); i++) {
+    const total = parseInt(repeat) || 1;
+    for (let i = 0; i < total; i++) {
       await transporter.sendMail(mailOptions);
-      console.log(`✅ Email ${i + 1} sent successfully`);
+      console.log(`✅ Email ${i + 1} of ${total} sent`);
     }
 
-    if (file) fs.unlinkSync(file.path);
+    // ✅ Clean up files
+    if (files?.length > 0) {
+      for (const file of files) {
+        fs.unlink(file.path, (err) => {
+          if (err) console.error("⚠️ Error deleting file:", err);
+        });
+      }
+    }
 
-    res.json({ success: true, message: "Emails sent successfully" });
+    res.json({ success: true, message: `All ${total} emails sent successfully!` });
   } catch (error) {
     console.error("❌ Email sending failed:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// ✅ Dynamic port (Railway requires this)
+// ✅ Dynamic Port (for Koyeb)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
