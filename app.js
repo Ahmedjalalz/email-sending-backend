@@ -27,13 +27,21 @@ app.use(
 app.use(express.json());
 
 // ✅ Multer setup (store uploads in /uploads)
-const upload = multer({ dest: "uploads/" });
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage });
 
 // ✅ Gmail credentials
 const USER_EMAIL = process.env.EMAIL_USER || "ahmedjalalzen@gmail.com";
 const APP_PASSWORD = process.env.EMAIL_PASS || "zbhxtnikcodnfpqg";
 
-// ✅ Root route
+// ✅ Root route for testing
 app.get("/", (req, res) => {
   res.send("✅ Email backend is live and running!");
 });
@@ -76,7 +84,6 @@ app.post("/send-email", upload.array("attachments", 10), async (req, res) => {
         : [],
     };
 
-    // ✅ Send emails as per repeat count
     const total = parseInt(repeat) || 1;
     for (let i = 0; i < total; i++) {
       await transporter.sendMail(mailOptions);
@@ -92,10 +99,7 @@ app.post("/send-email", upload.array("attachments", 10), async (req, res) => {
       }
     }
 
-    res.json({
-      success: true,
-      message: `✅ All ${total} email(s) sent successfully!`,
-    });
+    res.json({ success: true, message: `All ${total} emails sent successfully!` });
   } catch (error) {
     console.error("❌ Email sending failed:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -103,7 +107,7 @@ app.post("/send-email", upload.array("attachments", 10), async (req, res) => {
 });
 
 // ✅ Dynamic Port (for Koyeb)
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
