@@ -29,8 +29,10 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // ✅ Gmail credentials
-const USER_EMAIL = process.env.EMAIL_USER || "ahmedjalalzen@gmail.com";
-const APP_PASSWORD = process.env.EMAIL_PASS || "zbhxtnikcodnfpqg";
+const USER_EMAIL = process.env.EMAIL_USER;
+const APP_PASSWORD = process.env.EMAIL_PASS;
+// const USER_EMAIL = process.env.EMAIL_USER || "ahmedjalalzen@gmail.com";
+// const APP_PASSWORD = process.env.EMAIL_PASS || "zbhxtnikcodnfpqg";
 
 // ✅ Root route
 app.get("/", (req, res) => {
