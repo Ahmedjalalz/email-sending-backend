@@ -54,7 +54,14 @@ app.post("/send-email", upload.array("attachments", 10), async (req, res) => {
   try {
     const transporter = nodemailer.createTransport({
       service: "gmail",
-      auth: { user: USER_EMAIL, pass: APP_PASSWORD },
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 100,
+      rateLimit: 5,
     });
 
     const attachments =
